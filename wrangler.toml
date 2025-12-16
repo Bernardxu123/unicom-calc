@@ -1,0 +1,9 @@
+name = "unicom-v2"
+pages_build_output_dir = "dist"
+
+
+[[d1_databases]]
+binding = "DB"
+database_name = "unicom-db"
+database_id = "fb0d9c94-82a4-45b6-a9d4-d83f0f23ed7a" # Placeholder, will be replaced by user or generated
+preview_database_id = "DB"
