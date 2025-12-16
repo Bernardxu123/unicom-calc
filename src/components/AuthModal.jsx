@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import useAppStore from '../store/useAppStore';
-import { X, User, Lock, ArrowRight, LogOut, CloudUpload, CloudDownload, Check } from 'lucide-react';
+import { X, User, Lock, ArrowRight, LogOut, CloudUpload, CloudDownload, Check, Loader } from 'lucide-react';
 import { AnimatePresence, motion } from 'framer-motion';
 
 export default function AuthModal({ isOpen, onClose }) {
@@ -15,6 +15,23 @@ export default function AuthModal({ isOpen, onClose }) {
         e.preventDefault();
         setError('');
         setLoading(true);
+
+        // Validation
+        if (username.length < 3 || username.length > 20) {
+            setError('用户名长度必须在 3-20 个字符之间');
+            setLoading(false);
+            return;
+        }
+        if (!/^[a-zA-Z0-9_]+$/.test(username)) {
+            setError('用户名只能包含字母、数字和下划线');
+            setLoading(false);
+            return;
+        }
+        if (password.length < 6) {
+            setError('密码至少需要 6 个字符');
+            setLoading(false);
+            return;
+        }
 
         const action = isLogin ? login : register;
         const res = await action(username, password);
@@ -193,7 +210,7 @@ export default function AuthModal({ isOpen, onClose }) {
                             disabled={loading}
                             className="w-full bg-slate-900 text-white font-bold py-4 rounded-xl shadow-lg shadow-slate-900/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2"
                         >
-                            {loading ? '处理中...' : (isLogin ? '登录' : '注册')}
+                            {loading ? <Loader className="animate-spin" size={20} /> : (isLogin ? '登录' : '注册')}
                             {!loading && <ArrowRight size={18} />}
                         </button>
                     </form>

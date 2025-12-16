@@ -11,7 +11,9 @@ export async function onRequestPost({ request, env }) {
             return new Response(JSON.stringify({ error: 'Invalid credentials' }), { status: 401 });
         }
 
-        const secret = new TextEncoder().encode(env.JWT_SECRET || 'dev-secret-key-change-me');
+        const secretKey = env.JWT_SECRET || 'dev-secret-key-change-me';
+        if (!env.JWT_SECRET) console.warn('WARNING: Using default development JWT secret. Set JWT_SECRET in Cloudflare Dashboard for production.');
+        const secret = new TextEncoder().encode(secretKey);
         const token = await new SignJWT({ sub: user.id, username: user.username })
             .setProtectedHeader({ alg: 'HS256' })
             .setExpirationTime('30d')

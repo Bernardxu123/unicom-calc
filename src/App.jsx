@@ -14,7 +14,13 @@ export default function App() {
   const [isRankingOpen, setIsRankingOpen] = useState(false);
 
   return (
-    <div className="max-w-2xl mx-auto pt-24 px-4 pb-32">
+    <div
+      className="max-w-2xl mx-auto px-4"
+      style={{
+        paddingTop: 'calc(6rem + env(safe-area-inset-top))',
+        paddingBottom: 'calc(8rem + env(safe-area-inset-bottom))'
+      }}
+    >
       {/* Header */}
       <div className="fixed top-0 left-0 w-full z-40 bg-white/55 backdrop-blur-xl border-b border-white/30 shadow-[0_8px_30px_-20px_rgba(2,6,23,0.45)]">
         <div className="max-w-2xl mx-auto px-5 h-20 flex items-center justify-between">
