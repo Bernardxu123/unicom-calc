@@ -105,18 +105,27 @@ export default function SettingsModal({ isOpen, onClose }) {
                 <h3 className="text-lg font-bold text-slate-800 mb-4 px-1">设置与数据</h3>
 
                 <div className="grid grid-cols-2 gap-3 mb-6">
-                    {/* Add to Home Screen */}
-                    {installPrompt && (
-                        <button onClick={handleInstall} className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white py-3.5 rounded-xl font-bold text-xs flex flex-col items-center justify-center gap-2 hover:shadow-lg hover:brightness-110 transition col-span-2">
-                            <Smartphone className="text-white" size={20} /> 添加到桌面 (安装 App)
-                        </button>
-                    )}
-
-                    {/* iOS Hint */}
-                    {isIOS && !window.matchMedia('(display-mode: standalone)').matches && (
-                        <div className="bg-slate-50 border-dashed border border-slate-300 text-slate-500 py-3 rounded-xl font-bold text-[10px] flex items-center justify-center gap-2 col-span-2">
-                            <Share size={14} /> Safari 点击分享，选择 "添加到主屏幕"
-                        </div>
+                    {/* Add to Home Screen Logic */}
+                    {!window.matchMedia('(display-mode: standalone)').matches && (
+                        <>
+                            {installPrompt ? (
+                                <button onClick={handleInstall} className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white py-3.5 rounded-xl font-bold text-xs flex flex-col items-center justify-center gap-2 hover:shadow-lg hover:brightness-110 transition col-span-2">
+                                    <Smartphone className="text-white" size={20} /> 添加到桌面 (安装 App)
+                                </button>
+                            ) : (
+                                <div className="bg-slate-50 border-dashed border border-slate-300 text-slate-500 py-3 rounded-xl font-bold text-[10px] flex flex-col items-center justify-center gap-1.5 col-span-2 px-4 text-center">
+                                    <div className="flex items-center gap-2 text-slate-400">
+                                        {isIOS ? <Share size={14} /> : <Smartphone size={14} />}
+                                        <span className="uppercase tracking-wider">如何添加到桌面</span>
+                                    </div>
+                                    <p className="text-slate-400 font-medium">
+                                        {isIOS
+                                            ? "Safari 点击底部分享按钮，选择「添加到主屏幕」"
+                                            : "点击浏览器菜单 (⋮)，选择「安装应用」或「添加到主屏幕」"}
+                                    </p>
+                                </div>
+                            )}
+                        </>
                     )}
 
                     <button onClick={handleForceUpdate} className="bg-slate-50 border border-slate-200 text-slate-700 py-3.5 rounded-xl font-bold text-xs flex flex-col items-center justify-center gap-2 hover:bg-green-50 hover:border-green-200 transition">
