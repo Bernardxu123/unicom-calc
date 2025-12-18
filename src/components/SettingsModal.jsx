@@ -1,9 +1,26 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import useAppStore from '../store/useAppStore';
-import { Download, Upload, FileJson, Trash2 } from 'lucide-react';
+import { Download, Upload, FileJson, Trash2, RefreshCw, Smartphone, Share } from 'lucide-react';
 
 export default function SettingsModal({ isOpen, onClose }) {
     const { cards, currentDate, customPresets, globalVipPrice, setGlobalVipPrice, resetData, importData } = useAppStore();
+    const [installPrompt, setInstallPrompt] = useState(null);
+    const [isIOS, setIsIOS] = useState(false);
+
+    useEffect(() => {
+        // PWA Install Prompt
+        const handler = (e) => {
+            e.preventDefault();
+            setInstallPrompt(e);
+        };
+        window.addEventListener('beforeinstallprompt', handler);
+
+        // iOS Detection
+        const userAgent = window.navigator.userAgent.toLowerCase();
+        setIsIOS(/iphone|ipad|ipod/.test(userAgent));
+
+        return () => window.removeEventListener('beforeinstallprompt', handler);
+    }, []);
 
     if (!isOpen) return null;
 
@@ -53,6 +70,26 @@ export default function SettingsModal({ isOpen, onClose }) {
         link.click();
     };
 
+    const handleForceUpdate = async () => {
+        if (!confirm("确定要强制刷新并更新吗？")) return;
+        if ('serviceWorker' in navigator) {
+            const registrations = await navigator.serviceWorker.getRegistrations();
+            for (const registration of registrations) {
+                await registration.unregister();
+            }
+        }
+        window.location.reload(true);
+    };
+
+    const handleInstall = async () => {
+        if (!installPrompt) return;
+        installPrompt.prompt();
+        const { outcome } = await installPrompt.userChoice;
+        if (outcome === 'accepted') {
+            setInstallPrompt(null);
+        }
+    };
+
     return (
         <div className="fixed inset-0 z-[60] flex items-end justify-center">
             <div className="absolute inset-0 bg-black/20 backdrop-blur-sm" onClick={onClose}></div>
@@ -61,6 +98,24 @@ export default function SettingsModal({ isOpen, onClose }) {
                 <h3 className="text-lg font-bold text-slate-800 mb-4 px-1">设置与数据</h3>
 
                 <div className="grid grid-cols-2 gap-3 mb-6">
+                    {/* Add to Home Screen */}
+                    {installPrompt && (
+                        <button onClick={handleInstall} className="bg-gradient-to-br from-indigo-500 to-purple-600 text-white py-3.5 rounded-xl font-bold text-xs flex flex-col items-center justify-center gap-2 hover:shadow-lg hover:brightness-110 transition col-span-2">
+                            <Smartphone className="text-white" size={20} /> 添加到桌面 (安装 App)
+                        </button>
+                    )}
+
+                    {/* iOS Hint */}
+                    {isIOS && !window.matchMedia('(display-mode: standalone)').matches && (
+                        <div className="bg-slate-50 border-dashed border border-slate-300 text-slate-500 py-3 rounded-xl font-bold text-[10px] flex items-center justify-center gap-2 col-span-2">
+                            <Share size={14} /> Safari 点击分享，选择 "添加到主屏幕"
+                        </div>
+                    )}
+
+                    <button onClick={handleForceUpdate} className="bg-slate-50 border border-slate-200 text-slate-700 py-3.5 rounded-xl font-bold text-xs flex flex-col items-center justify-center gap-2 hover:bg-green-50 hover:border-green-200 transition">
+                        <RefreshCw className="text-green-600" size={20} /> 检查更新 (强制刷新)
+                    </button>
+
                     <button onClick={handleBackup} className="bg-slate-50 border border-slate-200 text-slate-700 py-3.5 rounded-xl font-bold text-xs flex flex-col items-center justify-center gap-2 hover:bg-primary/5 hover:border-primary/30 transition">
                         <FileJson className="text-primary" size={20} /> 备份数据 ({customPresets?.length || 0} 个模板)
                     </button>
