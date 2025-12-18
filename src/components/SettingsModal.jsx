@@ -5,7 +5,7 @@ import { Download, Upload, FileJson, Trash2, RefreshCw, Smartphone, Share } from
 export default function SettingsModal({ isOpen, onClose }) {
     const { cards, currentDate, customPresets, globalVipPrice, setGlobalVipPrice, resetData, importData } = useAppStore();
     const [installPrompt, setInstallPrompt] = useState(null);
-    const [isIOS, setIsIOS] = useState(false);
+    const isIOS = /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase());
 
     useEffect(() => {
         // PWA Install Prompt
@@ -14,11 +14,6 @@ export default function SettingsModal({ isOpen, onClose }) {
             setInstallPrompt(e);
         };
         window.addEventListener('beforeinstallprompt', handler);
-
-        // iOS Detection
-        const userAgent = window.navigator.userAgent.toLowerCase();
-        setIsIOS(/iphone|ipad|ipod/.test(userAgent));
-
         return () => window.removeEventListener('beforeinstallprompt', handler);
     }, []);
 
@@ -52,7 +47,7 @@ export default function SettingsModal({ isOpen, onClose }) {
                         onClose();
                     }
                 } else alert("❌ 格式错误");
-            } catch (err) { alert("❌ 解析失败"); }
+            } catch { alert("❌ 解析失败"); }
         };
         reader.readAsText(file);
         e.target.value = ''; // reset
@@ -71,13 +66,25 @@ export default function SettingsModal({ isOpen, onClose }) {
     };
 
     const handleForceUpdate = async () => {
-        if (!confirm("确定要强制刷新并更新吗？")) return;
+        if (!confirm("确定要强制刷新并更新吗？将会清理所有浏览器缓存。")) return;
+
+        // 1. Unregister Service Workers
         if ('serviceWorker' in navigator) {
             const registrations = await navigator.serviceWorker.getRegistrations();
             for (const registration of registrations) {
                 await registration.unregister();
             }
         }
+
+        // 2. Clear Cache Storage (Crucial for PWA)
+        if ('caches' in window) {
+            const cacheNames = await caches.keys();
+            for (const name of cacheNames) {
+                await caches.delete(name);
+            }
+        }
+
+        // 3. Force reload from server
         window.location.reload(true);
     };
 
